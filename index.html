@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Hub India - Jobs, Courses, ATS & Events</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a clean, modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb; /* Light background for body */
+        }
+        
+        /* Ensures smooth transition between page views */
+        .page-section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Active Nav Link Styling */
+        .nav-link.active {
+            color: #1d4ed8; /* Dark Blue */
+            font-weight: 600;
+            border-bottom: 3px solid #1d4ed8;
+        }
+
+        /* Card Hover Effect */
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal specific styles */
+        .modal-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header and Navigation (Sticky for easy access) -->
+    <header class="sticky top-0 z-50 bg-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo/Brand -->
+                <a href="#home" class="flex items-center text-2xl font-bold text-blue-700 logo-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 17V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z"/><path d="M7 12h.01"/><path d="M11 12h.01"/><path d="M15 12h.01"/>
+                    </svg>
+                    CareerHub<span class="text-indigo-500">.in</span>
+                </a>
+                
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#home" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="home">Home</a>
+                    <a href="#jobs" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="jobs">Job Openings</a>
+                    <a href="#courses" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="courses">Skill Courses</a>
+                    <a href="#ats" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="ats">ATS Checker</a>
+                    <a href="#events" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="events">Events & Workshops</a>
+                </nav>
+
+                <!-- Auth/User Button and Display -->
+                <div class="flex items-center space-x-4">
+                    <span id="user-display" class="hidden text-sm font-medium text-gray-600 truncate max-w-28 sm:max-w-40"></span>
+                    <button id="auth-button" class="bg-blue-600 text-white font-medium py-2 px-4 rounded-full shadow-md hover:bg-blue-700 transition duration-300">
+                        Login / Sign Up
+                    </button>
+                    <!-- Mobile Menu Button (Hidden on Desktop) -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 hover:text-blue-700 rounded-lg focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu (Dropdown) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg">
+            <a href="#home" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="home">Home</a>
+            <a href="#jobs" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="jobs">Job Openings</a>
+            <a href="#courses" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="courses">Skill Courses</a>
+            <a href="#ats" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="ats">ATS Checker</a>
+            <a href="#events" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="events">Events & Workshops</a>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+            <!-- 1. HOME SECTION -->
+            <section id="home-section" class="page-section" data-hash="home">
+                <div class="text-center py-20 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl shadow-2xl">
+                    <h1 class="text-5xl font-extrabold mb-4 animate-pulse">Your Future Starts Here.</h1>
+                    <p class="text-xl mb-8">Connecting India's talent with the best opportunities and skill development tools.</p>
+                    <div class="space-x-4">
+                        <a href="#jobs" class="inline-block bg-white text-indigo-600 font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">Find Jobs Now</a>
+                        <a href="#courses" class="inline-block border border-white text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition duration-300">Boost Your Skills</a>
+                    </div>
+                </div>
+
+                <div class="mt-16 grid md:grid-cols-4 gap-6 text-center">
+                    <div class="p-6 bg-white rounded-xl shadow-lg border-t-4 border-blue-500 card-hover">
+                        <svg class="h-10 w-10 text-blue-500 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18c0-3.3 1.3-6.4 3.5-8.5C7.7 7.3 10.8 6 14 6h6"/></svg>
+                        <h3 class="text-lg font-semibold text-gray-900">10,000+ Jobs</h3>
+                        <p class="text-sm text-gray-500">Across major Indian cities.</p>
+                    </div>
+                    <div class="p-6 bg-white rounded-xl shadow-lg border-t-4 border-indigo-500 card-hover">
+                        <svg class="h-10 w-10 text-indigo-500 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H15M8 12h6.5a4.5 4.5 0 1 1 0 9H2"/></svg>
+                        <h3 class="text-lg font-semibold text-gray-900">Top Courses</h3>
+                        <p class="text-sm text-gray-500">Industry-aligned skill programs.</p>
+                    </div>
+                    <div class="p-6 bg-white rounded-xl shadow-lg border-t-4 border-teal-500 card-hover">
+                        <svg class="h-10 w-10 text-teal-500 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 17h8M8 13h8"/></svg>
+                        <h3 class="text-lg font-semibold text-gray-900">Free ATS Check</h3>
+                        <p class="text-sm text-gray-500">Optimize your resume score.</p>
+                    </div>
+                    <div class="p-6 bg-white rounded-xl shadow-lg border-t-4 border-purple-500 card-hover">
+                        <svg class="h-10 w-10 text-purple-500 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                        <h3 class="text-lg font-semibold text-gray-900">Pan-India Events</h3>
+                        <p class="text-sm text-gray-500">Workshops and networking.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. JOB OPENINGS SECTION -->
+            <section id="jobs-section" class="page-section" data-hash="jobs">
+                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Latest Job Openings in India</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Job Card 1 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 card-hover">
+                        <h3 class="text-xl font-semibold text-gray-900">Senior Software Engineer (React)</h3>
+                        <p class="text-blue-600 mb-2">Tech Solutions Pvt. Ltd.</p>
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                             <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                            Bengaluru, Karnataka
+                        </div>
+                        <p class="text-gray-700 mb-4 text-sm">5+ years experience required. Focus on scalable web applications and microservices architecture.</p>
+                        <span class="inline-block bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">Full-Time</span>
+                        <a href="#" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
+                    </div>
+
+                    <!-- Job Card 2 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500 card-hover">
+                        <h3 class="text-xl font-semibold text-gray-900">Digital Marketing Specialist</h3>
+                        <p class="text-blue-600 mb-2">GrowFast Agency</p>
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                            Mumbai, Maharashtra
+                        </div>
+                        <p class="text-gray-700 mb-4 text-sm">3 years in SEO/SEM, content strategy, and social media campaigns.</p>
+                        <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full font-medium">Remote/Hybrid</span>
+                        <a href="#" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
+                    </div>
+
+                    <!-- Job Card 3 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-red-500 card-hover">
+                        <h3 class="text-xl font-semibold text-gray-900">Financial Analyst (Fresher)</h3>
+                        <p class="text-blue-600 mb-2">Capital Advisory Firm</p>
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                            Gurgaon, Haryana
+                        </div>
+                        <p class="text-gray-700 mb-4 text-sm">Requires B.Com/MBA in Finance. Strong Excel skills are mandatory.</p>
+                        <span class="inline-block bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-medium">Entry Level</span>
+                        <a href="#" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
+                    </div>
+                </div>
+                <div class="text-center mt-10">
+                    <button class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300 shadow-md">Load More Jobs</button>
+                </div>
+            </section>
+
+            <!-- 3. SKILL DEVELOPMENT COURSES SECTION -->
+            <section id="courses-section" class="page-section" data-hash="courses">
+                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Top Skill Development Courses</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Course Card 1 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-gray-900">Professional Data Science Certification</h3>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-medium">New</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-4">Master Python, R, Machine Learning, and SQL. Project-based learning with industry mentors.</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
+                            <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.8/5 Rating</span>
+                            <span>120 Hours</span>
+                        </div>
+                        <a href="#" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
+                    </div>
+
+                    <!-- Course Card 2 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-gray-900">Full-Stack Web Development Bootcamp</h3>
+                            <span class="bg-teal-100 text-teal-800 text-xs px-3 py-1 rounded-full font-medium">Trending</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-4">Learn MERN stack (MongoDB, Express, React, Node.js) from scratch. Includes 5 capstone projects.</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
+                            <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.6/5 Rating</span>
+                            <span>6 Months</span>
+                        </div>
+                        <a href="#" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
+                    </div>
+
+                    <!-- Course Card 3 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-semibold text-gray-900">Advanced Excel & Business Analytics</h3>
+                            <span class="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-medium">Popular</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-4">Deep dive into financial modeling, pivot tables, VLOOKUP, and business intelligence techniques.</p>
+                        <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
+                            <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.9/5 Rating</span>
+                            <span>40 Hours</span>
+                        </div>
+                        <a href="#" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. ATS RESUME CHECKER SECTION -->
+            <section id="ats-section" class="page-section" data-hash="ats">
+                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">ATS Resume Checker</h2>
+                <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
+                    <p class="text-lg text-gray-600 mb-6 text-center">Is your resume ATS (Applicant Tracking System) optimized? Upload your CV and paste the job description to get instant feedback and a compatibility score.</p>
+                    
+                    <form id="ats-form" class="space-y-6">
+                        <div>
+                            <label for="resume-upload" class="block text-sm font-medium text-gray-700 mb-2">Upload Resume (PDF/DOCX)</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v12a4 4 0 01-4 4H16c-1.373 0-2.65-.544-3.61-1.51M21 28l5 5 5-5m-5 5v-13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                            <span>Upload a file</span>
+                                            <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".pdf,.docx">
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PDF or DOCX up to 10MB</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="job-description" class="block text-sm font-medium text-gray-700 mb-2">Paste Job Description</label>
+                            <textarea id="job-description" rows="6" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-3" placeholder="Paste the full job description text here..."></textarea>
+                        </div>
+
+                        <div id="ats-result-box" class="hidden mt-6 p-4 rounded-lg text-center">
+                            <p class="font-semibold text-lg text-gray-800">Processing...</p>
+                        </div>
+                        
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
+                            Check ATS Score
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 5. WORKSHOPS AND EVENTS SECTION -->
+            <section id="events-section" class="page-section" data-hash="events">
+                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Workshops & Networking Events</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Event Card 1 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500 card-hover">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">National Tech Summit 2024</h3>
+                        <p class="text-sm text-gray-700 mb-3">Keynotes on AI, Blockchain, and the Future of Work in India.</p>
+                        <div class="flex items-center text-sm text-gray-500 mb-2">
+                             <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                             25th - 27th Nov 2024
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                             Pragati Maidan, New Delhi
+                        </div>
+                        <a href="#" class="block text-center bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-300">Register Now</a>
+                    </div>
+
+                    <!-- Event Card 2 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-pink-500 card-hover">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Resume & Interview Workshop</h3>
+                        <p class="text-sm text-gray-700 mb-3">Learn advanced techniques to clear behavioral and technical interviews.</p>
+                        <div class="flex items-center text-sm text-gray-500 mb-2">
+                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                            10th Dec 2024 (Online)
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                            Virtual Event (Pan-India)
+                        </div>
+                        <a href="#" class="block text-center bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition duration-300">Join Free</a>
+                    </div>
+                    
+                    <!-- Event Card 3 -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-orange-500 card-hover">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">FinTech & Banking Career Fair</h3>
+                        <p class="text-sm text-gray-700 mb-3">Meet recruiters from major banks and financial service companies.</p>
+                        <div class="flex items-center text-sm text-gray-500 mb-2">
+                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                            15th Jan 2025
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                            Chennai Trade Centre, Chennai
+                        </div>
+                        <a href="#" class="block text-center bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition duration-300">Get Tickets</a>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-10 p-8">
+        <div class="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-blue-400">Career Hub</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="#home" class="hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Career Advice</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-blue-400">Resources</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="#jobs" class="hover:text-white transition-colors">Job Search</a></li>
+                    <li><a href="#courses" class="hover:text-white transition-colors">Learning Paths</a></li>
+                    <li><a href="#ats" class="hover:text-white transition-colors">Resume Optimizer</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-lg mb-4 text-blue-400">Legal</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Cookie Settings</a></li>
+                </ul>
+            </div>
+            <div class="col-span-2 md:col-span-1">
+                <h4 class="font-bold text-lg mb-4 text-blue-400">Newsletter</h4>
+                <p class="text-sm text-gray-400 mb-4">Get the latest jobs and event alerts directly in your inbox.</p>
+                <form class="flex">
+                    <input type="email" placeholder="Your email" class="p-2 rounded-l-md w-full focus:outline-none text-gray-900" required>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-r-md transition duration-300">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="mt-8 pt-4 border-t border-gray-700 text-center text-sm text-gray-500">
+            &copy; 2024 Career Hub India. All rights reserved.
+        </div>
+    </footer>
+
+
+    <!-- Auth Modal - Hidden by default -->
+    <div id="auth-modal" class="fixed inset-0 z-[100] bg-gray-900 bg-opacity-75 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeModal()">
+        <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="auth-title" class="text-2xl font-bold text-gray-800">Login to CareerHub</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" id="login-email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="login-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 font-semibold">
+                    Login
+                </button>
+            </form>
+
+            <!-- Sign Up Form (Initially hidden) -->
+            <form id="signup-form" class="space-y-4 hidden">
+                <div>
+                    <label for="signup-email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" id="signup-email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label for="signup-password" class="block text-sm font-medium text-gray-700">Password (min 6 characters)</label>
+                    <input type="password" id="signup-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" minlength="6" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 font-semibold">
+                    Sign Up
+                </button>
+            </form>
+
+            <!-- Status Message Box -->
+            <div id="auth-message" class="mt-4 p-3 rounded-lg text-center hidden"></div>
+
+            <!-- Toggle Link -->
+            <div class="mt-6 text-center text-sm">
+                <p id="toggle-auth-mode" class="text-gray-600 cursor-pointer hover:text-blue-600 transition duration-300">
+                    Need an account? <span class="font-semibold text-blue-600">Sign Up</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDKs & Main Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setDoc, doc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Enable debug logging for Firebase/Firestore
+        setLogLevel('Debug');
+        
+        // --- GLOBAL FIREBASE/ENV SETUP ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase variables
+        let app = null;
+        let auth = null;
+        let db = null;
+        let currentUserId = null;
+
+
+        // Function to display messages in the modal
+        const showAuthMessage = (message, isError = false) => {
+            const msgBox = document.getElementById('auth-message');
+            msgBox.textContent = message;
+            msgBox.className = 'mt-4 p-3 rounded-lg text-center';
+            msgBox.classList.add(isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700');
+            msgBox.classList.remove('hidden');
+        };
+
+        // Function to open and close the modal (must be attached to window for inline HTML clicks)
+        window.openModal = () => {
+            document.getElementById('auth-modal').classList.add('modal-active');
+            // Clear message and reset to login form on open
+            document.getElementById('auth-message').classList.add('hidden');
+            document.getElementById('auth-title').textContent = 'Login to CareerHub';
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('toggle-auth-mode').innerHTML = 'Need an account? <span class="font-semibold text-blue-600">Sign Up</span>';
+        };
+        window.closeModal = () => {
+            document.getElementById('auth-modal').classList.remove('modal-active');
+        };
+
+        // --- AUTHENTICATION HANDLERS ---
+        async function handleSignUp(email, password) {
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Add initial user data to Firestore
+                const userDocRef = doc(db, `artifacts/${appId}/users/${userCredential.user.uid}/user_profile/data`);
+                await setDoc(userDocRef, {
+                    email: email,
+                    createdAt: new Date().toISOString()
+                });
+
+                showAuthMessage(`Success! Welcome, ${email}.`, false);
+                // Clear inputs
+                document.getElementById('signup-email').value = '';
+                document.getElementById('signup-password').value = '';
+                setTimeout(closeModal, 1500);
+
+            } catch (error) {
+                console.error("Sign Up Error:", error);
+                let errorMessage = 'An error occurred during sign up.';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'This email is already in use. Try logging in.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Password should be at least 6 characters.';
+                }
+                showAuthMessage(errorMessage, true);
+            }
+        }
+
+        async function handleSignIn(email, password) {
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showAuthMessage('Login successful!', false);
+                 // Clear inputs
+                document.getElementById('login-email').value = '';
+                document.getElementById('login-password').value = '';
+                setTimeout(closeModal, 1500);
+            } catch (error) {
+                console.error("Sign In Error:", error);
+                let errorMessage = 'Invalid email or password.';
+                if (error.code === 'auth/invalid-credential') {
+                     errorMessage = 'Invalid email or password.';
+                }
+                showAuthMessage(errorMessage, true);
+            }
+        }
+        
+        async function handleSignOut() {
+            try {
+                await signOut(auth);
+                console.log("User signed out.");
+                // The onAuthStateChanged listener will handle UI update
+            } catch (error) {
+                console.error("Sign Out Error:", error);
+            }
+        }
+
+        // --- INITIALIZATION AND DOM CONTENT ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link, .logo-link');
+            const pageSections = document.querySelectorAll('.page-section');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const atsForm = document.getElementById('ats-form');
+            const atsResultBox = document.getElementById('ats-result-box');
+            const authButton = document.getElementById('auth-button');
+            const userDisplay = document.getElementById('user-display');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const toggleAuthMode = document.getElementById('toggle-auth-mode');
+            const authTitle = document.getElementById('auth-title');
+
+            // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Initial sign-in attempt
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // --- AUTH STATE LISTENER ---
+                onAuthStateChanged(auth, (user) => {
+                    currentUserId = user?.uid || null;
+                    if (user && !user.isAnonymous) {
+                        // User is logged in via email/password
+                        userDisplay.textContent = `Welcome, ${user.email}`;
+                        userDisplay.classList.remove('hidden');
+                        authButton.textContent = 'Logout';
+                        authButton.onclick = handleSignOut;
+                        // Show user ID in console for debug/sharing
+                        console.log(`Authenticated User ID: ${currentUserId}`);
+                    } else {
+                        // User is anonymous or logged out
+                        userDisplay.classList.add('hidden');
+                        authButton.textContent = 'Login / Sign Up';
+                        authButton.onclick = window.openModal; // Use window function for clarity
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase Initialization or Auth Error:", error);
+                // Fallback UI update if Firebase fails
+                authButton.textContent = 'Login / Sign Up';
+                authButton.onclick = window.openModal; 
+            }
+
+            // --- AUTH MODAL LOGIC ---
+
+            // Toggle between Login and Sign Up forms
+            toggleAuthMode.addEventListener('click', () => {
+                loginForm.classList.toggle('hidden');
+                signupForm.classList.toggle('hidden');
+                document.getElementById('auth-message').classList.add('hidden'); // Clear previous message
+                
+                if (signupForm.classList.contains('hidden')) {
+                    authTitle.textContent = 'Login to CareerHub';
+                    toggleAuthMode.innerHTML = 'Need an account? <span class="font-semibold text-blue-600">Sign Up</span>';
+                } else {
+                    authTitle.textContent = 'Sign Up for Free';
+                    toggleAuthMode.innerHTML = 'Already have an account? <span class="font-semibold text-blue-600">Login</span>';
+                }
+            });
+
+            // Handle Login Form Submission
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                handleSignIn(email, password);
+            });
+
+            // Handle Sign Up Form Submission
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                handleSignUp(email, password);
+            });
+
+            // --- NAVIGATION LOGIC (Simulates Multi-Page) ---
+            
+            // Function to show the correct section and update the URL hash
+            const navigateTo = (hash) => {
+                const sectionId = hash.substring(1) + '-section';
+                let targetSection = document.getElementById(sectionId);
+
+                // 1. Hide all sections
+                pageSections.forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // 2. Show the target section or default to home
+                if (!targetSection) {
+                    targetSection = document.getElementById('home-section');
+                    hash = '#home';
+                }
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                }
+
+                // 3. Update active link styling
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    }
+                });
+
+                // 4. Update the URL hash
+                if (window.location.hash !== hash) {
+                    history.pushState(null, null, hash);
+                }
+            };
+
+            // Event listener for navigation links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const hash = link.getAttribute('href');
+                    navigateTo(hash);
+                    // Close mobile menu after clicking a link
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenu.classList.remove('flex');
+                    }
+                    window.scrollTo(0, 0); // Scroll to top on navigation
+                });
+            });
+
+            // Handle initial page load and history changes
+            const initialHash = window.location.hash || '#home';
+            navigateTo(initialHash);
+            
+            window.addEventListener('popstate', () => {
+                navigateTo(window.location.hash || '#home');
+            });
+
+            // --- MOBILE MENU TOGGLE ---
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                mobileMenu.classList.toggle('flex');
+                mobileMenu.classList.toggle('flex-col');
+            });
+
+
+            // --- ATS CHECKER MOCK FUNCTIONALITY ---
+            atsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const resumeFile = document.getElementById('file-upload').files[0];
+                const jobDescription = document.getElementById('job-description').value.trim();
+                
+                let message = '';
+                atsResultBox.classList.remove('hidden');
+                atsResultBox.classList.remove('bg-gray-100', 'bg-red-100', 'bg-yellow-100', 'bg-green-100');
+                atsResultBox.classList.add('bg-gray-100');
+
+                if (!resumeFile) {
+                    message = `<p class="text-red-600">Please upload a resume file (PDF or DOCX).</p>`;
+                    atsResultBox.classList.replace('bg-gray-100', 'bg-red-100');
+                } else if (jobDescription.length < 50) {
+                    message = `<p class="text-yellow-600">Please paste a longer job description for accurate analysis (currently ${jobDescription.length} characters).</p>`;
+                    atsResultBox.classList.replace('bg-gray-100', 'bg-yellow-100');
+                } else {
+                    // Simulate ATS analysis time
+                    atsResultBox.innerHTML = '<p class="text-blue-600">Analyzing keywords and formatting...</p>';
+                    
+                    setTimeout(() => {
+                        // Generate a mock score
+                        const score = Math.floor(Math.random() * (95 - 60 + 1)) + 60; // Score between 60 and 95
+                        let feedback = '';
+                        let color = 'text-green-600';
+                        let bgColor = 'bg-green-100';
+
+                        if (score < 70) {
+                            feedback = 'Low compatibility. Consider adding more keywords from the job description and ensuring a clean format.';
+                            color = 'text-red-600';
+                            bgColor = 'bg-red-100';
+                        } else if (score < 85) {
+                            feedback = 'Good compatibility. Focus on quantifying your achievements for a better score.';
+                            color = 'text-yellow-700';
+                            bgColor = 'bg-yellow-100';
+                        } else {
+                            feedback = 'Excellent compatibility! Your resume is highly optimized for this job description.';
+                            color = 'text-green-600';
+                            bgColor = 'bg-green-100';
+                        }
+
+                        atsResultBox.classList.replace('bg-gray-100', bgColor);
+                        atsResultBox.innerHTML = `
+                            <p class="text-xl font-bold mb-2">ATS Score: <span class="${color}">${score}%</span></p>
+                            <p class="text-sm text-gray-700">${feedback}</p>
+                        `;
+
+                    }, 2000); // 2 second delay for simulation
+                    return;
+                }
+                
+                // If there was an immediate error (missing file/JD)
+                atsResultBox.innerHTML = message;
+            });
+            
+            // Set initial active state for Home link
+            document.querySelector('.nav-link[data-section="home"]').classList.add('active');
+        });
+    </script>
+</body>
+</html>
