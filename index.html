@@ -436,10 +436,16 @@
         // Enable debug logging for Firebase/Firestore
         setLogLevel('Debug');
         
-        // --- GLOBAL FIREBASE/ENV SETUP ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // --- FIREBASE CLIENT CONFIGURATION ---
+        // Replace this with your actual Firebase project config from Firebase Console
+        const firebaseConfig = {
+            apiKey: "45cb0a6ba489197d9dc792cf6be3ea204ad20898",
+            authDomain: "karma-setu.firebaseapp.com",
+            projectId: "karma-setu",
+            storageBucket: "karma-setu.firebasestorage.app",
+            messagingSenderId: "841891654306",
+            appId: "1:1234567890:web:321abc456def7890"
+        };
 
         // Initialize Firebase variables
         let app = null;
@@ -477,10 +483,11 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 
                 // Add initial user data to Firestore
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userCredential.user.uid}/user_profile/data`);
+                const userDocRef = doc(db, `users/${userCredential.user.uid}`);
                 await setDoc(userDocRef, {
                     email: email,
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    profileComplete: false
                 });
 
                 showAuthMessage(`Success! Welcome, ${email}.`, false);
@@ -496,6 +503,8 @@
                     errorMessage = 'This email is already in use. Try logging in.';
                 } else if (error.code === 'auth/weak-password') {
                     errorMessage = 'Password should be at least 6 characters.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Invalid email address.';
                 }
                 showAuthMessage(errorMessage, true);
             }
@@ -514,6 +523,10 @@
                 let errorMessage = 'Invalid email or password.';
                 if (error.code === 'auth/invalid-credential') {
                      errorMessage = 'Invalid email or password.';
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'No account found with this email.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Incorrect password.';
                 }
                 showAuthMessage(errorMessage, true);
             }
@@ -550,12 +563,8 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Initial sign-in attempt
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // Sign in anonymously for basic access
+                await signInAnonymously(auth);
 
                 // --- AUTH STATE LISTENER ---
                 onAuthStateChanged(auth, (user) => {
@@ -572,7 +581,7 @@
                         // User is anonymous or logged out
                         userDisplay.classList.add('hidden');
                         authButton.textContent = 'Login / Sign Up';
-                        authButton.onclick = window.openModal; // Use window function for clarity
+                        authButton.onclick = window.openModal;
                     }
                 });
 
@@ -743,7 +752,5 @@
         });
     </script>
 </body>
-
 </html>
-
 
