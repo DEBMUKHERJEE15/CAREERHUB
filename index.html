@@ -4,18 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Karma Setu India - Jobs, Courses, ATS & Events</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom font for a clean, modern look */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb; /* Light background for body */
+            background-color: #f7f9fb;
         }
         
-        /* Ensures smooth transition between page views */
         .page-section {
             display: none;
             animation: fadeIn 0.5s ease-out;
@@ -26,14 +23,18 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Active Nav Link Styling */
         .nav-link.active {
-            color: #1d4ed8; /* Dark Blue */
+            color: #1d4ed8;
             font-weight: 600;
             border-bottom: 3px solid #1d4ed8;
         }
 
-        /* Card Hover Effect */
+        .nav-link.disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .card-hover {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -42,20 +43,53 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Modal specific styles */
         .modal-active {
             opacity: 1;
             pointer-events: auto;
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .locked-feature {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 12px;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Header and Navigation (Sticky for easy access) -->
     <header class="sticky top-0 z-50 bg-white shadow-lg">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo/Brand -->
                 <a href="#home" class="flex items-center text-2xl font-bold text-blue-700 logo-link">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 17V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2Z"/><path d="M7 12h.01"/><path d="M11 12h.01"/><path d="M15 12h.01"/>
@@ -63,22 +97,50 @@
                     KarmaSetu<span class="text-indigo-500">.in</span>
                 </a>
                 
-                <!-- Desktop Navigation Links -->
                 <nav class="hidden md:flex space-x-8">
                     <a href="#home" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="home">Home</a>
-                    <a href="#jobs" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="jobs">Job Openings</a>
-                    <a href="#courses" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="courses">Skill Courses</a>
-                    <a href="#ats" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="ats">ATS Checker</a>
-                    <a href="#events" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out" data-section="events">Events & Workshops</a>
+                    <a href="#jobs" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out disabled" data-section="jobs" id="jobs-nav">Job Openings</a>
+                    <a href="#courses" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out disabled" data-section="courses" id="courses-nav">Skill Courses</a>
+                    <a href="#ats" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out disabled" data-section="ats" id="ats-nav">ATS Checker</a>
+                    <a href="#events" class="nav-link text-gray-600 hover:text-blue-700 py-2 transition duration-150 ease-in-out disabled" data-section="events" id="events-nav">Events & Workshops</a>
                 </nav>
 
-                <!-- Auth/User Button and Display -->
                 <div class="flex items-center space-x-4">
-                    <span id="user-display" class="hidden text-sm font-medium text-gray-600 truncate max-w-28 sm:max-w-40"></span>
-                    <button id="auth-button" class="bg-blue-600 text-white font-medium py-2 px-4 rounded-full shadow-md hover:bg-blue-700 transition duration-300">
+                    <!-- User Profile Section - Hidden by default -->
+                    <div id="user-profile-container" class="hidden relative">
+                        <button id="user-profile-button" class="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 border border-gray-200 transition duration-150">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm" id="user-avatar">
+                                U
+                            </div>
+                            <span id="user-display-name" class="text-sm font-semibold text-gray-700 max-w-[120px] truncate">User</span>
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- User Dropdown Menu -->
+                        <div id="user-dropdown" class="user-dropdown">
+                            <div class="p-4 border-b border-gray-100">
+                                <p class="text-sm font-semibold text-gray-900" id="dropdown-user-name">User Name</p>
+                                <p class="text-xs text-gray-500 truncate" id="dropdown-user-email">user@example.com</p>
+                            </div>
+                            
+                            <div class="p-2 border-t border-gray-100">
+                                <button id="logout-button" class="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login/Signup Button - Visible by default -->
+                    <button id="auth-button" class="bg-blue-600 text-white font-medium py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition duration-300">
                         Login / Sign Up
                     </button>
-                    <!-- Mobile Menu Button (Hidden on Desktop) -->
+
                     <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 hover:text-blue-700 rounded-lg focus:outline-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
@@ -88,29 +150,26 @@
             </div>
         </div>
         
-        <!-- Mobile Menu (Dropdown) -->
         <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg">
             <a href="#home" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="home">Home</a>
-            <a href="#jobs" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="jobs">Job Openings</a>
-            <a href="#courses" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="courses">Skill Courses</a>
-            <a href="#ats" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="ats">ATS Checker</a>
-            <a href="#events" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link" data-section="events">Events & Workshops</a>
+            <a href="#jobs" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link disabled" data-section="jobs" id="jobs-nav-mobile">Job Openings</a>
+            <a href="#courses" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link disabled" data-section="courses" id="courses-nav-mobile">Skill Courses</a>
+            <a href="#ats" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link disabled" data-section="ats" id="ats-nav-mobile">ATS Checker</a>
+            <a href="#events" class="block px-4 py-3 text-gray-700 hover:bg-gray-100 mobile-nav-link disabled" data-section="events" id="events-nav-mobile">Events & Workshops</a>
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-grow">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-            <!-- 1. HOME SECTION -->
             <section id="home-section" class="page-section" data-hash="home">
                 <div class="text-center py-20 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl shadow-2xl">
                     <h1 class="text-5xl font-extrabold mb-4 animate-pulse">Your Future Starts Here.</h1>
                     <p class="text-xl mb-8">Connecting India's talent with the best opportunities and skill development tools.</p>
                     <div class="space-x-4">
-                        <a href="#jobs" class="inline-block bg-white text-indigo-600 font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">Find Jobs Now</a>
-                        <a href="#courses" class="inline-block border border-white text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition duration-300">Boost Your Skills</a>
-                    </div>
+    <button onclick="navigateTo('#home')" class="inline-block bg-white text-indigo-600 font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">Find Jobs Now</button>
+    <button onclick="navigateTo('#home')" class="inline-block border border-white text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition duration-300">Boost Your Skills</button>
+</div>
                 </div>
 
                 <div class="mt-16 grid md:grid-cols-4 gap-6 text-center">
@@ -135,232 +194,274 @@
                         <p class="text-sm text-gray-500">Workshops and networking.</p>
                     </div>
                 </div>
+
+                <!-- Login Prompt Section -->
+                <div id="login-prompt" class="mt-16 bg-gradient-to-r from-orange-500 to-red-500 text-white p-8 rounded-xl shadow-2xl text-center">
+                    <h2 class="text-3xl font-bold mb-4">Unlock All Features!</h2>
+                    <p class="text-xl mb-6">Create your free account to access job openings, skill courses, ATS resume checker, and exclusive events.</p>
+                    <button onclick="openModal()" class="bg-white text-orange-600 font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-100 transition duration-300">
+                        Sign Up Now - It's Free!
+                    </button>
+                </div>
             </section>
 
-            <!-- 2. JOB OPENINGS SECTION -->
             <section id="jobs-section" class="page-section" data-hash="jobs">
-                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Latest Job Openings in India</h2>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                    <!-- Job Card 1 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 card-hover">
-                        <h3 class="text-xl font-semibold text-gray-900">Senior Software Engineer (React)</h3>
-                        <p class="text-blue-600 mb-2">Google</p>
-                        <div class="flex items-center text-sm text-gray-500 mb-3">
-                             <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-                            Bengaluru, Karnataka
-                        </div>
-                        <p class="text-gray-700 mb-4 text-sm">5+ years experience required. Focus on scalable web applications and microservices architecture.</p>
-                        <span class="inline-block bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">Full-Time</span>
-                        <a href="https://www.google.com/about/careers/applications/jobs/results/125611950166942406-software-engineer/" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
+                <div class="locked-feature">
+                    <div class="locked-overlay">
+                        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">Job Openings Locked</h3>
+                        <p class="text-gray-600 mb-4">Please login to access thousands of job opportunities</p>
+                        <button onclick="openModal()" class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300">
+                            Login to Unlock
+                        </button>
                     </div>
-
-                    <!-- Job Card 2 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500 card-hover">
-                        <h3 class="text-xl font-semibold text-gray-900">Digital Marketing Specialist</h3>
-                        <p class="text-blue-600 mb-2">Accenture</p>
-                        <div class="flex items-center text-sm text-gray-500 mb-3">
-                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-                            Mumbai, Maharashtra
+                    
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Latest Job Openings in India</h2>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 card-hover">
+                            <h3 class="text-xl font-semibold text-gray-900">Senior Software Engineer (React)</h3>
+                            <p class="text-blue-600 mb-2">Google</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                 <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                                Bengaluru, Karnataka
+                            </div>
+                            <p class="text-gray-700 mb-4 text-sm">5+ years experience required. Focus on scalable web applications and microservices architecture.</p>
+                            <span class="inline-block bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-medium">Full-Time</span>
+                            <a href="https://www.google.com/about/careers/applications/jobs/results/125611950166942406-software-engineer/" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
                         </div>
-                        <p class="text-gray-700 mb-4 text-sm">3 years in SEO/SEM, content strategy, and social media campaigns.</p>
-                        <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full font-medium">Remote/Hybrid</span>
-                        <a href="https://accntu.re/3RdPkwO" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
-                    </div>
 
-                    <!-- Job Card 3 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-red-500 card-hover">
-                        <h3 class="text-xl font-semibold text-gray-900">Financial Analyst (Fresher)</h3>
-                        <p class="text-blue-600 mb-2">EPAM</p>
-                        <div class="flex items-center text-sm text-gray-500 mb-3">
-                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-                            Gurgaon, Haryana
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500 card-hover">
+                            <h3 class="text-xl font-semibold text-gray-900">Digital Marketing Specialist</h3>
+                            <p class="text-blue-600 mb-2">Accenture</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                                Mumbai, Maharashtra
+                            </div>
+                            <p class="text-gray-700 mb-4 text-sm">3 years in SEO/SEM, content strategy, and social media campaigns.</p>
+                            <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full font-medium">Remote/Hybrid</span>
+                            <a href="https://accntu.re/3RdPkwO" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
                         </div>
-                        <p class="text-gray-700 mb-4 text-sm">Requires B.Com/MBA in Finance. Strong Excel skills are mandatory.</p>
-                        <span class="inline-block bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-medium">Entry Level</span>
-                        <a href="https://www.naukri.com/campus/apps/careers/customised/landingpage/epam/index.html" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
+
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-red-500 card-hover">
+                            <h3 class="text-xl font-semibold text-gray-900">Financial Analyst (Fresher)</h3>
+                            <p class="text-blue-600 mb-2">EPAM</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                                Gurgaon, Haryana
+                            </div>
+                            <p class="text-gray-700 mb-4 text-sm">Requires B.Com/MBA in Finance. Strong Excel skills are mandatory.</p>
+                            <span class="inline-block bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-medium">Entry Level</span>
+                            <a href="https://www.naukri.com/campus/apps/careers/customised/landingpage/epam/index.html" class="block mt-4 text-blue-600 hover:text-blue-800 font-medium">Apply Now &rarr;</a>
+                        </div>
                     </div>
-                </div>
-                <div class="text-center mt-10">
-                    <button class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300 shadow-md">Load More Jobs</button>
+                    <div class="text-center mt-10">
+                        <button class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300 shadow-md">Load More Jobs</button>
+                    </div>
                 </div>
             </section>
 
-            <!-- 3. SKILL DEVELOPMENT COURSES SECTION -->
             <section id="courses-section" class="page-section" data-hash="courses">
-                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Top Skill Development Courses</h2>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                    <!-- Course Card 1 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-xl font-semibold text-gray-900">Professional Data Science Certification</h3>
-                            <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-medium">New</span>
-                        </div>
-                        <p class="text-sm text-gray-700 mb-4">Master Python, R, Machine Learning, and SQL. Project-based learning with industry mentors.</p>
-                        <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
-                            <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.8/5 Rating</span>
-                            <span>120 Hours</span>
-                        </div>
-                        <a href="https://skillsbuild.org/students/course-catalog/data-science" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
+                <div class="locked-feature">
+                    <div class="locked-overlay">
+                        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">Skill Courses Locked</h3>
+                        <p class="text-gray-600 mb-4">Please login to access our premium skill development courses</p>
+                        <button onclick="openModal()" class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300">
+                            Login to Unlock
+                        </button>
                     </div>
-
-                    <!-- Course Card 2 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-xl font-semibold text-gray-900">Full-Stack Web Development Bootcamp</h3>
-                            <span class="bg-teal-100 text-teal-800 text-xs px-3 py-1 rounded-full font-medium">Trending</span>
-                        </div>
-                        <p class="text-sm text-gray-700 mb-4">Learn MERN stack (MongoDB, Express, React, Node.js) from scratch. Includes 5 capstone projects.</p>
-                        <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
-                            <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.6/5 Rating</span>
-                            <span>6 Months</span>
-                        </div>
-                        <a href="https://skillsbuild.org/students/course-catalog/web-development" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
-                    </div>
-
-                    <!-- Course Card 3 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="text-xl font-semibold text-gray-900">Advanced Excel & Business Analytics</h3>
-                            <span class="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-medium">Popular</span>
-                        </div>
-                        <p class="text-sm text-gray-700 mb-4">Deep dive into financial modeling, pivot tables, VLOOKUP, and business intelligence techniques.</p>
-                        <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
-                            <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.9/5 Rating</span>
-                            <span>40 Hours</span>
-                        </div>
-                        <a href="https://www.coursera.org/learn/business-analytics-excel" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
-                    </div>
-                </div>
-
-                <!-- NEW: AI COURSE RECOMMENDATION SECTION -->
-                <div id="ai-recommendation-section" class="mt-16 bg-white p-8 rounded-xl shadow-2xl border-t-4 border-indigo-500">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Get AI-Powered Course Recommendations</h2>
-                    <p class="text-lg text-gray-600 mb-6 text-center max-w-2xl mx-auto">Upload your resume and our AI will analyze your skills to recommend the perfect courses to advance your career.</p>
                     
-                    <form id="ai-course-form" class="space-y-6 max-w-xl mx-auto">
-                        <div>
-                            <label for="resume-upload-ai" class="block text-sm font-medium text-gray-700 mb-2">Upload Your Resume (PDF/DOCX)</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v12a4 4 0 01-4 4H16c-1.373 0-2.65-.544-3.61-1.51M21 28l5 5 5-5m-5 5v-13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="flex text-sm text-gray-600">
-                                        <label for="ai-resume-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                            <span>Upload a file</span>
-                                            <input id="ai-resume-upload" name="ai-resume-upload" type="file" class="sr-only" accept=".pdf,.docx">
-                                        </label>
-                                        <p class="pl-1">or drag and drop</p>
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Top Skill Development Courses</h2>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-xl font-semibold text-gray-900">Professional Data Science Certification</h3>
+                                <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-medium">New</span>
+                            </div>
+                            <p class="text-sm text-gray-700 mb-4">Master Python, R, Machine Learning, and SQL. Project-based learning with industry mentors.</p>
+                            <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
+                                <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.8/5 Rating</span>
+                                <span>120 Hours</span>
+                            </div>
+                            <a href="https://skillsbuild.org/students/course-catalog/data-science" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-xl font-semibold text-gray-900">Full-Stack Web Development Bootcamp</h3>
+                                <span class="bg-teal-100 text-teal-800 text-xs px-3 py-1 rounded-full font-medium">Trending</span>
+                            </div>
+                            <p class="text-sm text-gray-700 mb-4">Learn MERN stack (MongoDB, Express, React, Node.js) from scratch. Includes 5 capstone projects.</p>
+                            <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
+                                <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.6/5 Rating</span>
+                                <span>6 Months</span>
+                            </div>
+                            <a href="https://skillsbuild.org/students/course-catalog/web-development" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-xl font-semibold text-gray-900">Advanced Excel & Business Analytics</h3>
+                                <span class="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-medium">Popular</span>
+                            </div>
+                            <p class="text-sm text-gray-700 mb-4">Deep dive into financial modeling, pivot tables, VLOOKUP, and business intelligence techniques.</p>
+                            <div class="flex justify-between items-center text-sm text-gray-500 mb-3">
+                                <span class="flex items-center"><svg class="h-4 w-4 mr-1 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> 4.9/5 Rating</span>
+                                <span>40 Hours</span>
+                            </div>
+                            <a href="https://www.coursera.org/learn/business-analytics-excel" class="block mt-4 text-center bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">View Details</a>
+                        </div>
+                    </div>
+
+                    <div id="ai-recommendation-section" class="mt-16 bg-white p-8 rounded-xl shadow-2xl border-t-4 border-indigo-500">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-4 text-center">Get AI-Powered Course Recommendations</h2>
+                        <p class="text-lg text-gray-600 mb-6 text-center max-w-2xl mx-auto">Upload your resume and our AI will analyze your skills to recommend the perfect courses to advance your career.</p>
+                        
+                        <form id="ai-course-form" class="space-y-6 max-w-xl mx-auto">
+                            <div>
+                                <label for="resume-upload-ai" class="block text-sm font-medium text-gray-700 mb-2">Upload Your Resume (PDF/DOCX)</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v12a4 4 0 01-4 4H16c-1.373 0-2.65-.544-3.61-1.51M21 28l5 5 5-5m-5 5v-13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="ai-resume-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                                <span>Upload a file</span>
+                                                <input id="ai-resume-upload" name="ai-resume-upload" type="file" class="sr-only" accept=".pdf,.docx">
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p id="ai-file-name" class="text-xs text-gray-500">PDF or DOCX up to 10MB</p>
                                     </div>
-                                    <p id="ai-file-name" class="text-xs text-gray-500">PDF or DOCX up to 10MB</p>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300">
-                            Analyze & Recommend Courses
-                        </button>
-                    </form>
+                            
+                            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300">
+                                Analyze & Recommend Courses
+                            </button>
+                        </form>
 
-                    <!-- AI Recommendation Results -->
-                    <div id="ai-recommendation-results" class="mt-8 hidden">
-                        <!-- Loading message and results will be injected here -->
+                        <div id="ai-recommendation-results" class="mt-8 hidden">
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 4. ATS RESUME CHECKER SECTION -->
             <section id="ats-section" class="page-section" data-hash="ats">
-                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">ATS Resume Checker</h2>
-                <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
-                    <p class="text-lg text-gray-600 mb-6 text-center">Is your resume ATS (Applicant Tracking System) optimized? Upload your CV and paste the job description to get instant feedback and a compatibility score.</p>
+                <div class="locked-feature">
+                    <div class="locked-overlay">
+                        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">ATS Checker Locked</h3>
+                        <p class="text-gray-600 mb-4">Please login to use our ATS resume optimization tool</p>
+                        <button onclick="openModal()" class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300">
+                            Login to Unlock
+                        </button>
+                    </div>
                     
-                    <form id="ats-form" class="space-y-6">
-                        <div>
-                            <label for="resume-upload" class="block text-sm font-medium text-gray-700 mb-2">Upload Resume (PDF/DOCX)</label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v12a4 4 0 01-4 4H16c-1.373 0-2.65-.544-3.61-1.51M21 28l5 5 5-5m-5 5v-13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="flex text-sm text-gray-600">
-                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                            <span>Upload a file</span>
-                                            <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".pdf,.docx">
-                                        </label>
-                                        <p class="pl-1">or drag and drop</p>
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">ATS Resume Checker</h2>
+                    <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
+                        <p class="text-lg text-gray-600 mb-6 text-center">Is your resume ATS (Applicant Tracking System) optimized? Upload your CV and paste the job description to get instant feedback and a compatibility score.</p>
+                        
+                        <form id="ats-form" class="space-y-6">
+                            <div>
+                                <label for="resume-upload" class="block text-sm font-medium text-gray-700 mb-2">Upload Resume (PDF/DOCX)</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v12a4 4 0 01-4 4H16c-1.373 0-2.65-.544-3.61-1.51M21 28l5 5 5-5m-5 5v-13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                                <span>Upload a file</span>
+                                                <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".pdf,.docx">
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PDF or DOCX up to 10MB</p>
                                     </div>
-                                    <p class="text-xs text-gray-500">PDF or DOCX up to 10MB</p>
                                 </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <label for="job-description" class="block text-sm font-medium text-gray-700 mb-2">Paste Job Description</label>
-                            <textarea id="job-description" rows="6" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-3" placeholder="Paste the full job description text here..."></textarea>
-                        </div>
+                            <div>
+                                <label for="job-description" class="block text-sm font-medium text-gray-700 mb-2">Paste Job Description</label>
+                                <textarea id="job-description" rows="6" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-3" placeholder="Paste the full job description text here..."></textarea>
+                            </div>
 
-                        <div id="ats-result-box" class="hidden mt-6 p-4 rounded-lg text-center">
-                            <p class="font-semibold text-lg text-gray-800">Processing...</p>
-                        </div>
-                        
-                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
-                            Check ATS Score
-                        </button>
-                    </form>
+                            <div id="ats-result-box" class="hidden mt-6 p-4 rounded-lg text-center">
+                                <p class="font-semibold text-lg text-gray-800">Processing...</p>
+                            </div>
+                            
+                            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
+                                Check ATS Score
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </section>
 
-            <!-- 5. WORKSHOPS AND EVENTS SECTION -->
             <section id="events-section" class="page-section" data-hash="events">
-                <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Workshops & Networking Events</h2>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                    <!-- Event Card 1 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500 card-hover">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Tech Workshop - IIT KHARAGPUR</h3>
-                        <p class="text-sm text-gray-700 mb-3">Keynotes on AI, Blockchain, and the Future of Work in India.</p>
-                        <div class="flex items-center text-sm text-gray-500 mb-2">
-                             <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                             25th - 27th Nov 2025
-                        </div>
-                        <div class="flex items-center text-sm text-gray-500 mb-4">
-                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-                             IIT KHARAGPUR RESEARCH PARK,KOLKATA
-                        </div>
-                        <a href="https://www.ktj.in/" class="block text-center bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-300">Register Now</a>
-                    </div>
-
-                    <!-- Event Card 2 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-pink-500 card-hover">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">VIBE CODING WORKSHOP</h3>
-                        <p class="text-sm text-gray-700 mb-3">Learn advanced techniques to clear behavioral and technical interviews.</p>
-                        <div class="flex items-center text-sm text-gray-500 mb-2">
-                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                            10th Dec 2025 (Online)
-                        </div>
-                        <div class="flex items-center text-sm text-gray-500 mb-4">
-                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-                            Virtual Event (Pan-India)
-                        </div>
-                        <a href="https://learn.microsoft.com/en-us/training/modules/introduction-vibe-coding/" class="block text-center bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition duration-300">Join Free</a>
+                <div class="locked-feature">
+                    <div class="locked-overlay">
+                        <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">Events Locked</h3>
+                        <p class="text-gray-600 mb-4">Please login to view and register for workshops and networking events</p>
+                        <button onclick="openModal()" class="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition duration-300">
+                            Login to Unlock
+                        </button>
                     </div>
                     
-                    <!-- Event Card 3 -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-orange-500 card-hover">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">FinTech & Banking Career Fair</h3>
-                        <p class="text-sm text-gray-700 mb-3">Meet recruiters from major banks and financial service companies.</p>
-                        <div class="flex items-center text-sm text-gray-500 mb-2">
-                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                            15th Jan 2026
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 border-b pb-2">Workshops & Networking Events</h2>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500 card-hover">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">Tech Workshop - IIT KHARAGPUR</h3>
+                            <p class="text-sm text-gray-700 mb-3">Keynotes on AI, Blockchain, and the Future of Work in India.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-2">
+                                 <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                 25th - 27th Nov 2025
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 mb-4">
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                                 IIT KHARAGPUR RESEARCH PARK,KOLKATA
+                            </div>
+                            <a href="https://www.ktj.in/" class="block text-center bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-300">Register Now</a>
                         </div>
-                        <div class="flex items-center text-sm text-gray-500 mb-4">
-                            <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-                            Chennai Trade Centre, Chennai
+
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-pink-500 card-hover">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">VIBE CODING WORKSHOP</h3>
+                            <p class="text-sm text-gray-700 mb-3">Learn advanced techniques to clear behavioral and technical interviews.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-2">
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                10th Dec 2025 (Online)
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 mb-4">
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                                Virtual Event (Pan-India)
+                            </div>
+                            <a href="https://learn.microsoft.com/en-us/training/modules/introduction-vibe-coding/" class="block text-center bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition duration-300">Join Free</a>
                         </div>
-                        <a href="https://www.coursera.org/courses?query=fintech" class="block text-center bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition duration-300">Get Tickets</a>
+                        
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-orange-500 card-hover">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">FinTech & Banking Career Fair</h3>
+                            <p class="text-sm text-gray-700 mb-3">Meet recruiters from major banks and financial service companies.</p>
+                            <div class="flex items-center text-sm text-gray-500 mb-2">
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                15th Jan 2026
+                            </div>
+                            <div class="flex items-center text-sm text-gray-500 mb-4">
+                                <svg class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8C4 4.5 7.6 2 12 2s8 2.5 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+                                Chennai Trade Centre, Chennai
+                            </div>
+                            <a href="https://www.coursera.org/courses?query=fintech" class="block text-center bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition duration-300">Get Tickets</a>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -368,7 +469,6 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-800 text-white mt-10 p-8">
         <div class="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
@@ -409,18 +509,16 @@
         </div>
     </footer>
 
-
-    <!-- Auth Modal - Hidden by default -->
+    <!-- Auth Modal -->
     <div id="auth-modal" class="fixed inset-0 z-[100] bg-gray-900 bg-opacity-75 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeModal()">
         <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="auth-title" class="text-2xl font-bold text-gray-800">Login to CareerHub</h2>
+                <h2 id="auth-title" class="text-2xl font-bold text-gray-800">Login to KarmaSetu</h2>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <!-- Login Form -->
             <form id="login-form" class="space-y-4">
                 <div>
                     <label for="login-email" class="block text-sm font-medium text-gray-700">Email Address</label>
@@ -435,8 +533,17 @@
                 </button>
             </form>
 
-            <!-- Sign Up Form (Initially hidden) -->
             <form id="signup-form" class="space-y-4 hidden">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="signup-firstname" class="block text-sm font-medium text-gray-700">First Name</label>
+                        <input type="text" id="signup-firstname" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label for="signup-lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
+                        <input type="text" id="signup-lastname" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                </div>
                 <div>
                     <label for="signup-email" class="block text-sm font-medium text-gray-700">Email Address</label>
                     <input type="email" id="signup-email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" required>
@@ -450,10 +557,8 @@
                 </button>
             </form>
 
-            <!-- Status Message Box -->
             <div id="auth-message" class="mt-4 p-3 rounded-lg text-center hidden"></div>
 
-            <!-- Toggle Link -->
             <div class="mt-6 text-center text-sm">
                 <p id="toggle-auth-mode" class="text-gray-600 cursor-pointer hover:text-blue-600 transition duration-300">
                     Need an account? <span class="font-semibold text-blue-600">Sign Up</span>
@@ -462,283 +567,668 @@
         </div>
     </div>
 
+ <script>
+    // Backend API URL
+    const API_BASE_URL = 'http://localhost:5000/api';
 
-    <!-- Firebase SDKs & Main Script -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, setDoc, doc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    // Authentication state management
+    let currentUser = null;
+    let authToken = localStorage.getItem('authToken');
+    let isCheckingAuth = false;
 
-        // Enable debug logging for Firebase/Firestore
-        setLogLevel('Debug');
+    // DOM Elements - with null safety
+    const authButton = document.getElementById('auth-button');
+    const userProfileContainer = document.getElementById('user-profile-container');
+    const userProfileButton = document.getElementById('user-profile-button');
+    const userDropdown = document.getElementById('user-dropdown');
+    const userDisplayName = document.getElementById('user-display-name');
+    const userAvatar = document.getElementById('user-avatar');
+    const dropdownUserName = document.getElementById('dropdown-user-name');
+    const dropdownUserEmail = document.getElementById('dropdown-user-email');
+    const logoutButton = document.getElementById('logout-button');
+
+    // Navigation elements
+    const jobsNav = document.getElementById('jobs-nav');
+    const coursesNav = document.getElementById('courses-nav');
+    const atsNav = document.getElementById('ats-nav');
+    const eventsNav = document.getElementById('events-nav');
+    const profileNav = document.getElementById('profile-nav');
+    const jobsNavMobile = document.getElementById('jobs-nav-mobile');
+    const coursesNavMobile = document.getElementById('courses-nav-mobile');
+    const atsNavMobile = document.getElementById('ats-nav-mobile');
+    const eventsNavMobile = document.getElementById('events-nav-mobile');
+    const profileNavMobile = document.getElementById('profile-nav-mobile');
+
+    // Modal Elements - will be initialized when needed
+    let authModal, loginForm, signupForm, toggleAuthMode, authTitle, authMessage;
+
+    // Profile Elements
+    const personalInfoForm = document.getElementById('personal-info-form');
+    const professionalInfoForm = document.getElementById('professional-info-form');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+
+    // Initialize application
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Initializing application...');
+        initializeModalElements(); // Initialize modal elements first
+        initializeAuth();
+        setupEventListeners();
+        setupNavigation();
+        setupATSFunctionality();
+        setupAICourseRecommendation();
+        setupExternalLinkHandling();
+        setupProfileDropdown();
+        setupProfileForms();
+    });
+
+    function initializeModalElements() {
+        console.log('Initializing modal elements...');
+        authModal = document.getElementById('auth-modal');
+        loginForm = document.getElementById('login-form');
+        signupForm = document.getElementById('signup-form');
+        toggleAuthMode = document.getElementById('toggle-auth-mode');
+        authTitle = document.getElementById('auth-title');
+        authMessage = document.getElementById('auth-message');
         
-        // --- FIREBASE CLIENT CONFIGURATION ---
-        // Replace this with your actual Firebase project config from Firebase Console
-        const firebaseConfig = {
-            apiKey: "45cb0a6ba489197d9dc792cf6be3ea204ad20898",
-            authDomain: "karma-setu.firebaseapp.com",
-            projectId: "karma-setu",
-            storageBucket: "karma-setu.firebasestorage.app",
-            messagingSenderId: "841891654306",
-            appId: "1:1234567890:web:321abc456def7890"
-        };
+        console.log('Modal elements found:', {
+            authModal: !!authModal,
+            loginForm: !!loginForm,
+            signupForm: !!signupForm,
+            toggleAuthMode: !!toggleAuthMode,
+            authTitle: !!authTitle,
+            authMessage: !!authMessage
+        });
+    }
 
-        // Initialize Firebase variables
-        let app = null;
-        let auth = null;
-        let db = null;
-        let currentUserId = null;
-
-
-        // Function to display messages in the modal
-        const showAuthMessage = (message, isError = false) => {
-            const msgBox = document.getElementById('auth-message');
-            msgBox.textContent = message;
-            msgBox.className = 'mt-4 p-3 rounded-lg text-center';
-            msgBox.classList.add(isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700');
-            msgBox.classList.remove('hidden');
-        };
-
-        // Function to open and close the modal (must be attached to window for inline HTML clicks)
-        window.openModal = () => {
-            document.getElementById('auth-modal').classList.add('modal-active');
-            // Clear message and reset to login form on open
-            document.getElementById('auth-message').classList.add('hidden');
-            document.getElementById('auth-title').textContent = 'Login to CareerHub';
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('signup-form').classList.add('hidden');
-            document.getElementById('toggle-auth-mode').innerHTML = 'Need an account? <span class="font-semibold text-blue-600">Sign Up</span>';
-        };
-        window.closeModal = () => {
-            document.getElementById('auth-modal').classList.remove('modal-active');
-        };
-
-        // --- AUTHENTICATION HANDLERS ---
-        async function handleSignUp(email, password) {
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                
-                // Add initial user data to Firestore
-                const userDocRef = doc(db, `users/${userCredential.user.uid}`);
-                await setDoc(userDocRef, {
-                    email: email,
-                    createdAt: new Date().toISOString(),
-                    profileComplete: false
-                });
-
-                showAuthMessage(`Success! Welcome, ${email}.`, false);
-                // Clear inputs
-                document.getElementById('signup-email').value = '';
-                document.getElementById('signup-password').value = '';
-                setTimeout(closeModal, 1500);
-
-            } catch (error) {
-                console.error("Sign Up Error:", error);
-                let errorMessage = 'An error occurred during sign up.';
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = 'This email is already in use. Try logging in.';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'Password should be at least 6 characters.';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'Invalid email address.';
-                }
-                showAuthMessage(errorMessage, true);
-            }
-        }
-
-        async function handleSignIn(email, password) {
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                showAuthMessage('Login successful!', false);
-                 // Clear inputs
-                document.getElementById('login-email').value = '';
-                document.getElementById('login-password').value = '';
-                setTimeout(closeModal, 1500);
-            } catch (error) {
-                console.error("Sign In Error:", error);
-                let errorMessage = 'Invalid email or password.';
-                if (error.code === 'auth/invalid-credential') {
-                     errorMessage = 'Invalid email or password.';
-                } else if (error.code === 'auth/user-not-found') {
-                    errorMessage = 'No account found with this email.';
-                } else if (error.code === 'auth/wrong-password') {
-                    errorMessage = 'Incorrect password.';
-                }
-                showAuthMessage(errorMessage, true);
-            }
-        }
+    function setupEventListeners() {
+        console.log('Setting up event listeners...');
         
-        async function handleSignOut() {
-            try {
-                await signOut(auth);
-                console.log("User signed out.");
-                // The onAuthStateChanged listener will handle UI update
-            } catch (error) {
-                console.error("Sign Out Error:", error);
-            }
-        }
-
-        // --- INITIALIZATION AND DOM CONTENT ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link, .logo-link');
-            const pageSections = document.querySelectorAll('.page-section');
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            const atsForm = document.getElementById('ats-form');
-            const atsResultBox = document.getElementById('ats-result-box');
-            const authButton = document.getElementById('auth-button');
-            const userDisplay = document.getElementById('user-display');
-            const loginForm = document.getElementById('login-form');
-            const signupForm = document.getElementById('signup-form');
-            const toggleAuthMode = document.getElementById('toggle-auth-mode');
-            const authTitle = document.getElementById('auth-title');
-
-            // --- NEW: AI COURSE RECOMMENDATION ELEMENTS ---
-            const aiCourseForm = document.getElementById('ai-course-form');
-            const aiResumeUploadInput = document.getElementById('ai-resume-upload');
-            const aiFileNameDisplay = document.getElementById('ai-file-name');
-            const aiRecommendationResults = document.getElementById('ai-recommendation-results');
-
-
-            // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
-            try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // Sign in anonymously for basic access
-                await signInAnonymously(auth);
-
-                // --- AUTH STATE LISTENER ---
-                onAuthStateChanged(auth, (user) => {
-                    currentUserId = user?.uid || null;
-                    if (user && !user.isAnonymous) {
-                        // User is logged in via email/password
-                        userDisplay.textContent = `Welcome, ${user.email}`;
-                        userDisplay.classList.remove('hidden');
-                        authButton.textContent = 'Logout';
-                        authButton.onclick = handleSignOut;
-                        // Show user ID in console for debug/sharing
-                        console.log(`Authenticated User ID: ${currentUserId}`);
-                    } else {
-                        // User is anonymous or logged out
-                        userDisplay.classList.add('hidden');
-                        authButton.textContent = 'Login / Sign Up';
-                        authButton.onclick = window.openModal;
-                    }
-                });
-
-            } catch (error) {
-                console.error("Firebase Initialization or Auth Error:", error);
-                // Fallback UI update if Firebase fails
-                authButton.textContent = 'Login / Sign Up';
-                authButton.onclick = window.openModal; 
-            }
-
-            // --- AUTH MODAL LOGIC ---
-
-            // Toggle between Login and Sign Up forms
-            toggleAuthMode.addEventListener('click', () => {
-                loginForm.classList.toggle('hidden');
-                signupForm.classList.toggle('hidden');
-                document.getElementById('auth-message').classList.add('hidden'); // Clear previous message
-                
-                if (signupForm.classList.contains('hidden')) {
-                    authTitle.textContent = 'Login to CareerHub';
-                    toggleAuthMode.innerHTML = 'Need an account? <span class="font-semibold text-blue-600">Sign Up</span>';
+        // Safe event listener for auth button
+        if (authButton) {
+            authButton.addEventListener('click', function() {
+                if (currentUser) {
+                    handleLogout();
                 } else {
-                    authTitle.textContent = 'Sign Up for Free';
-                    toggleAuthMode.innerHTML = 'Already have an account? <span class="font-semibold text-blue-600">Login</span>';
+                    openModal();
+                }
+            });
+        } else {
+            console.warn('authButton not found');
+        }
+
+        // Safe event listener for user profile button
+        if (userProfileButton) {
+            userProfileButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (userDropdown) {
+                    userDropdown.classList.toggle('show');
+                }
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            if (userDropdown) {
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        // Safe event listener for logout button
+        if (logoutButton) {
+            logoutButton.addEventListener('click', handleLogout);
+        }
+
+        // Safe event listeners for auth forms
+        if (loginForm) {
+            loginForm.addEventListener('submit', handleLogin);
+        }
+
+        if (signupForm) {
+            signupForm.addEventListener('submit', handleSignup);
+        }
+
+        if (toggleAuthMode) {
+            toggleAuthMode.addEventListener('click', toggleAuthForms);
+        }
+
+        // Close modal when clicking outside or escape key
+        if (authModal) {
+            authModal.addEventListener('click', function(e) {
+                if (e.target === authModal) {
+                    closeModal();
                 }
             });
 
-            // Handle Login Form Submission
-            loginForm.addEventListener('submit', (e) => {
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && authModal.classList.contains('modal-active')) {
+                    closeModal();
+                }
+            });
+        }
+    }
+
+    // Modal Functions with enhanced null safety
+    function openModal() {
+        console.log('Opening modal...');
+        
+        // Re-initialize modal elements in case they weren't found initially
+        if (!authModal) {
+            console.log('Re-initializing modal elements...');
+            initializeModalElements();
+        }
+        
+        if (!authModal) {
+            console.error('authModal still not found after re-initialization');
+            // Fallback: create a basic modal or show alert
+            alert('Please login or sign up to continue');
+            return;
+        }
+        
+        authModal.classList.add('modal-active');
+        authModal.classList.remove('opacity-0', 'pointer-events-none');
+        
+        if (authMessage) authMessage.classList.add('hidden');
+        if (authTitle) authTitle.textContent = 'Login to KarmaSetu';
+        if (loginForm) loginForm.classList.remove('hidden');
+        if (signupForm) signupForm.classList.add('hidden');
+        if (toggleAuthMode) {
+            toggleAuthMode.innerHTML = 'Need an account? <span class="font-semibold text-blue-600">Sign Up</span>';
+        }
+        if (loginForm) loginForm.reset();
+        if (signupForm) signupForm.reset();
+        
+        console.log('Modal opened successfully');
+    }
+
+    function closeModal() {
+        if (authModal) {
+            authModal.classList.remove('modal-active');
+            authModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+    }
+
+    function toggleAuthForms() {
+        if (!loginForm || !signupForm) {
+            console.warn('Login or signup form not found');
+            return;
+        }
+        
+        loginForm.classList.toggle('hidden');
+        signupForm.classList.toggle('hidden');
+        if (authMessage) authMessage.classList.add('hidden');
+        
+        if (signupForm.classList.contains('hidden')) {
+            if (authTitle) authTitle.textContent = 'Login to KarmaSetu';
+            if (toggleAuthMode) {
+                toggleAuthMode.innerHTML = 'Need an account? <span class="font-semibold text-blue-600">Sign Up</span>';
+            }
+        } else {
+            if (authTitle) authTitle.textContent = 'Sign Up for Free';
+            if (toggleAuthMode) {
+                toggleAuthMode.innerHTML = 'Already have an account? <span class="font-semibold text-blue-600">Login</span>';
+            }
+        }
+    }
+
+    function showAuthMessage(message, isError = false) {
+        if (!authMessage) {
+            console.warn('authMessage element not found');
+            // Fallback: use alert for important messages
+            if (isError) {
+                alert('Error: ' + message);
+            }
+            return;
+        }
+        
+        authMessage.textContent = message;
+        authMessage.className = 'mt-4 p-3 rounded-lg text-center';
+        if (isError) {
+            authMessage.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-300');
+        } else {
+            authMessage.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-300');
+        }
+        authMessage.classList.remove('hidden');
+    }
+
+    // Navigation function
+    function navigateTo(hash) {
+        console.log('Navigating to:', hash, 'Current user:', currentUser);
+        
+        // If not logged in and trying to access protected pages, redirect to home
+        if (!currentUser && hash !== '#home') {
+            console.log('Access denied - not logged in');
+            showLoginPrompt();
+            history.pushState(null, null, '#home');
+            return;
+        }
+
+        const sectionId = hash.substring(1) + '-section';
+        let targetSection = document.getElementById(sectionId);
+        const pageSections = document.querySelectorAll('.page-section');
+        const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link, .logo-link');
+
+        pageSections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        if (!targetSection) {
+            targetSection = document.getElementById('home-section');
+            hash = '#home';
+        }
+        if (targetSection) {
+            targetSection.style.display = 'block';
+        }
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === hash) {
+                link.classList.add('active');
+            }
+        });
+
+        if (window.location.hash !== hash) {
+            history.pushState(null, null, hash);
+        }
+    }
+
+    function setupNavigation() {
+        const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link, .logo-link');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                handleSignIn(email, password);
-            });
-
-            // Handle Sign Up Form Submission
-            signupForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const email = document.getElementById('signup-email').value;
-                const password = document.getElementById('signup-password').value;
-                handleSignUp(email, password);
-            });
-
-            // --- NAVIGATION LOGIC (Simulates Multi-Page) ---
-            
-            // Function to show the correct section and update the URL hash
-            const navigateTo = (hash) => {
-                const sectionId = hash.substring(1) + '-section';
-                let targetSection = document.getElementById(sectionId);
-
-                // 1. Hide all sections
-                pageSections.forEach(section => {
-                    section.style.display = 'none';
-                });
-
-                // 2. Show the target section or default to home
-                if (!targetSection) {
-                    targetSection = document.getElementById('home-section');
-                    hash = '#home';
+                const hash = link.getAttribute('href');
+                
+                if (link.classList.contains('disabled') && !currentUser) {
+                    showLoginPrompt();
+                    return;
                 }
-                if (targetSection) {
-                    targetSection.style.display = 'block';
+                
+                navigateTo(hash);
+                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
                 }
-
-                // 3. Update active link styling
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === hash) {
-                        link.classList.add('active');
-                    }
-                });
-
-                // 4. Update the URL hash
-                if (window.location.hash !== hash) {
-                    history.pushState(null, null, hash);
-                }
-            };
-
-            // Event listener for navigation links
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const hash = link.getAttribute('href');
-                    navigateTo(hash);
-                    // Close mobile menu after clicking a link
-                    if (!mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
-                        mobileMenu.classList.remove('flex');
-                    }
-                    window.scrollTo(0, 0); // Scroll to top on navigation
-                });
+                window.scrollTo(0, 0);
             });
+        });
 
-            // Handle initial page load and history changes
-            const initialHash = window.location.hash || '#home';
-            navigateTo(initialHash);
-            
-            window.addEventListener('popstate', () => {
-                navigateTo(window.location.hash || '#home');
-            });
+        const initialHash = window.location.hash || '#home';
+        navigateTo(initialHash);
+        
+        window.addEventListener('popstate', () => {
+            const hash = window.location.hash || '#home';
+            if (!currentUser && hash !== '#home') {
+                showLoginPrompt();
+                history.pushState(null, null, '#home');
+                navigateTo('#home');
+            } else {
+                navigateTo(hash);
+            }
+        });
 
-            // --- MOBILE MENU TOGGLE ---
+        if (mobileMenuButton && mobileMenu) {
             mobileMenuButton.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
-                mobileMenu.classList.toggle('flex');
-                mobileMenu.classList.toggle('flex-col');
+            });
+        }
+    }
+
+    // Authentication Functions
+    function initializeAuth() {
+        console.log('Initializing auth, token exists:', !!authToken);
+        if (authToken) {
+            checkAuthStatus();
+        } else {
+            showLoginState();
+            navigateTo('#home');
+            disableProtectedFeatures();
+        }
+    }
+
+    async function checkAuthStatus() {
+        if (isCheckingAuth) return;
+        
+        isCheckingAuth = true;
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/check`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
             });
 
+            if (response.ok) {
+                const data = await response.json();
+                currentUser = data.user;
+                showLoggedInState();
+                enableProtectedFeatures();
+            } else {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+                authToken = null;
+                currentUser = null;
+                showLoginState();
+                disableProtectedFeatures();
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+            if (authToken) {
+                const storedUserData = localStorage.getItem('userData');
+                if (storedUserData) {
+                    currentUser = JSON.parse(storedUserData);
+                }
+                showLoggedInState();
+                enableProtectedFeatures();
+            } else {
+                showLoginState();
+                disableProtectedFeatures();
+            }
+        } finally {
+            isCheckingAuth = false;
+        }
+    }
 
-            // --- ATS CHECKER MOCK FUNCTIONALITY ---
+    async function handleLogin(e) {
+        if (e) e.preventDefault();
+        const email = document.getElementById('login-email')?.value;
+        const password = document.getElementById('login-password')?.value;
+
+        if (!email || !password) {
+            showAuthMessage('Please fill in all fields', true);
+            return;
+        }
+
+        showAuthMessage('Logging in...', false);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                authToken = data.token;
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('userData', JSON.stringify(data.user));
+                currentUser = data.user;
+                
+                showAuthMessage('Login successful!', false);
+                setTimeout(() => {
+                    closeModal();
+                    showLoggedInState();
+                    enableProtectedFeatures();
+                }, 1000);
+            } else {
+                showAuthMessage(data.error || 'Login failed', true);
+            }
+        } catch (error) {
+            showAuthMessage('Network error. Please try again.', true);
+        }
+    }
+
+    async function handleSignup(e) {
+        if (e) e.preventDefault();
+        const firstName = document.getElementById('signup-firstname')?.value;
+        const lastName = document.getElementById('signup-lastname')?.value;
+        const email = document.getElementById('signup-email')?.value;
+        const password = document.getElementById('signup-password')?.value;
+
+        if (!firstName || !lastName || !email || !password) {
+            showAuthMessage('Please fill in all fields', true);
+            return;
+        }
+
+        showAuthMessage('Creating account...', false);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    email, 
+                    password, 
+                    firstName, 
+                    lastName 
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                authToken = data.token;
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('userData', JSON.stringify(data.user));
+                currentUser = data.user;
+                
+                showAuthMessage('Account created successfully!', false);
+                setTimeout(() => {
+                    closeModal();
+                    showLoggedInState();
+                    enableProtectedFeatures();
+                }, 1000);
+            } else {
+                showAuthMessage(data.error || 'Signup failed', true);
+            }
+        } catch (error) {
+            showAuthMessage('Network error. Please try again.', true);
+        }
+    }
+
+    function handleLogout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        authToken = null;
+        currentUser = null;
+        showLoginState();
+        disableProtectedFeatures();
+        if (userDropdown) {
+            userDropdown.classList.remove('show');
+        }
+        navigateTo('#home');
+    }
+
+    // UI Update Functions
+    function showLoggedInState() {
+        const displayName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User';
+        const firstLetter = displayName.charAt(0).toUpperCase();
+        
+        if (userDisplayName) userDisplayName.textContent = displayName;
+        if (userAvatar) userAvatar.textContent = firstLetter;
+        if (dropdownUserName) dropdownUserName.textContent = displayName;
+        if (dropdownUserEmail) dropdownUserEmail.textContent = currentUser?.email || '';
+
+        if (userProfileContainer) userProfileContainer.classList.remove('hidden');
+        if (authButton) {
+            authButton.classList.remove('hidden');
+            authButton.textContent = 'Logout';
+            authButton.classList.add('bg-red-500', 'hover:bg-red-600');
+            authButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        }
+    }
+
+    function showLoginState() {
+        if (userProfileContainer) userProfileContainer.classList.add('hidden');
+        if (authButton) {
+            authButton.classList.remove('hidden');
+            authButton.textContent = 'Login / Sign Up';
+            authButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+            authButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }
+    }
+
+    function disableProtectedFeatures() {
+        const navElements = [jobsNav, coursesNav, atsNav, eventsNav, profileNav, jobsNavMobile, coursesNavMobile, atsNavMobile, eventsNavMobile, profileNavMobile];
+        navElements.forEach(nav => {
+            if (nav) nav.classList.add('disabled');
+        });
+
+        const protectedSections = ['jobs-section', 'courses-section', 'ats-section', 'events-section', 'profile-section'];
+        protectedSections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('locked-feature');
+                const overlay = section.querySelector('.locked-overlay');
+                if (overlay) overlay.style.display = 'flex';
+            }
+        });
+    }
+
+    function enableProtectedFeatures() {
+        const navElements = [jobsNav, coursesNav, atsNav, eventsNav, profileNav, jobsNavMobile, coursesNavMobile, atsNavMobile, eventsNavMobile, profileNavMobile];
+        navElements.forEach(nav => {
+            if (nav) nav.classList.remove('disabled');
+        });
+
+        const protectedSections = ['jobs-section', 'courses-section', 'ats-section', 'events-section', 'profile-section'];
+        protectedSections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.remove('locked-feature');
+                const overlay = section.querySelector('.locked-overlay');
+                if (overlay) overlay.style.display = 'none';
+            }
+        });
+
+        if (currentUser && window.location.hash === '#profile') {
+            updateProfileInformation();
+        }
+    }
+
+    function showLoginPrompt() {
+        openModal();
+        showAuthMessage('Please login or sign up to access this feature!', false);
+    }
+
+    function updateProfileInformation() {
+        const profileAvatar = document.getElementById('profile-avatar');
+        const profileUserName = document.getElementById('profile-user-name');
+        const profileUserEmail = document.getElementById('profile-user-email');
+
+        if (profileAvatar) {
+            const firstLetter = currentUser?.displayName?.charAt(0) || currentUser?.email?.charAt(0) || 'U';
+            profileAvatar.textContent = firstLetter.toUpperCase();
+        }
+        if (profileUserName) {
+            profileUserName.textContent = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User';
+        }
+        if (profileUserEmail) {
+            profileUserEmail.textContent = currentUser?.email || 'user@example.com';
+        }
+    }
+
+    function setupProfileForms() {
+        // Check if forms exist before adding event listeners
+        if (personalInfoForm) {
+            personalInfoForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const personalInfo = Object.fromEntries(formData);
+                
+                // Save to localStorage
+                localStorage.setItem('personalInfo', JSON.stringify(personalInfo));
+                
+                alert('Personal information saved successfully!');
+                console.log('Personal info saved:', personalInfo);
+            });
+        }
+
+        if (professionalInfoForm) {
+            professionalInfoForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const professionalInfo = Object.fromEntries(formData);
+                
+                // Save to localStorage
+                localStorage.setItem('professionalInfo', JSON.stringify(professionalInfo));
+                
+                alert('Professional information saved successfully!');
+                console.log('Professional info saved:', professionalInfo);
+            });
+        }
+
+        // Load saved data
+        loadProfileData();
+    }
+
+    function loadProfileData() {
+        // Load personal info
+        const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
+        if (personalInfo.fullName && document.getElementById('profile-full-name')) {
+            document.getElementById('profile-full-name').value = personalInfo.fullName;
+        }
+        if (personalInfo.email && document.getElementById('profile-email')) {
+            document.getElementById('profile-email').value = personalInfo.email;
+        }
+        if (personalInfo.phone && document.getElementById('profile-phone')) {
+            document.getElementById('profile-phone').value = personalInfo.phone;
+        }
+        if (personalInfo.location && document.getElementById('profile-location')) {
+            document.getElementById('profile-location').value = personalInfo.location;
+        }
+
+        // Load professional info
+        const professionalInfo = JSON.parse(localStorage.getItem('professionalInfo') || '{}');
+        if (professionalInfo.position && document.getElementById('profile-position')) {
+            document.getElementById('profile-position').value = professionalInfo.position;
+        }
+        if (professionalInfo.experience && document.getElementById('profile-experience')) {
+            document.getElementById('profile-experience').value = professionalInfo.experience;
+        }
+        if (professionalInfo.education && document.getElementById('profile-education')) {
+            document.getElementById('profile-education').value = professionalInfo.education;
+        }
+        if (professionalInfo.skills && document.getElementById('profile-skills')) {
+            document.getElementById('profile-skills').value = professionalInfo.skills;
+        }
+    }
+
+    function setupProfileDropdown() {
+        const profileDropdownLink = document.querySelector('.profile-dropdown-link');
+        if (profileDropdownLink) {
+            profileDropdownLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (userDropdown) {
+                    userDropdown.classList.remove('show');
+                }
+                navigateTo('#profile');
+            });
+        }
+    }
+
+    function setupExternalLinkHandling() {
+        const externalLinks = document.querySelectorAll('a[href^="http"]');
+        externalLinks.forEach(link => {
+            if (!link.href.includes(window.location.hostname)) {
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+            }
+        });
+    }
+
+    // ATS Functionality
+    function setupATSFunctionality() {
+        const atsForm = document.getElementById('ats-form');
+        const atsResultBox = document.getElementById('ats-result-box');
+
+        if (atsForm && atsResultBox) {
             atsForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const resumeFile = document.getElementById('file-upload').files[0];
-                const jobDescription = document.getElementById('job-description').value.trim();
+                if (!currentUser) {
+                    showLoginPrompt();
+                    return;
+                }
+
+                const resumeFile = document.getElementById('file-upload')?.files[0];
+                const jobDescription = document.getElementById('job-description')?.value.trim();
                 
                 let message = '';
                 atsResultBox.classList.remove('hidden');
@@ -748,16 +1238,14 @@
                 if (!resumeFile) {
                     message = `<p class="text-red-600">Please upload a resume file (PDF or DOCX).</p>`;
                     atsResultBox.classList.replace('bg-gray-100', 'bg-red-100');
-                } else if (jobDescription.length < 50) {
-                    message = `<p class="text-yellow-600">Please paste a longer job description for accurate analysis (currently ${jobDescription.length} characters).</p>`;
+                } else if (!jobDescription || jobDescription.length < 50) {
+                    message = `<p class="text-yellow-600">Please paste a longer job description for accurate analysis (currently ${jobDescription?.length || 0} characters).</p>`;
                     atsResultBox.classList.replace('bg-gray-100', 'bg-yellow-100');
                 } else {
-                    // Simulate ATS analysis time
                     atsResultBox.innerHTML = '<p class="text-blue-600">Analyzing keywords and formatting...</p>';
                     
                     setTimeout(() => {
-                        // Generate a mock score
-                        const score = Math.floor(Math.random() * (95 - 60 + 1)) + 60; // Score between 60 and 95
+                        const score = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
                         let feedback = '';
                         let color = 'text-green-600';
                         let bgColor = 'bg-green-100';
@@ -782,15 +1270,23 @@
                             <p class="text-sm text-gray-700">${feedback}</p>
                         `;
 
-                    }, 2000); // 2 second delay for simulation
+                    }, 2000);
                     return;
                 }
                 
-                // If there was an immediate error (missing file/JD)
                 atsResultBox.innerHTML = message;
             });
+        }
+    }
 
-            // --- NEW: AI COURSE RECOMMENDATION LOGIC ---
+    // AI Course Recommendation
+    function setupAICourseRecommendation() {
+        const aiCourseForm = document.getElementById('ai-course-form');
+        const aiResumeUploadInput = document.getElementById('ai-resume-upload');
+        const aiFileNameDisplay = document.getElementById('ai-file-name');
+        const aiRecommendationResults = document.getElementById('ai-recommendation-results');
+
+        if (aiCourseForm && aiResumeUploadInput && aiFileNameDisplay && aiRecommendationResults) {
             aiResumeUploadInput.addEventListener('change', () => {
                 if (aiResumeUploadInput.files.length > 0) {
                     aiFileNameDisplay.textContent = aiResumeUploadInput.files[0].name;
@@ -803,6 +1299,11 @@
 
             aiCourseForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                if (!currentUser) {
+                    showLoginPrompt();
+                    return;
+                }
+
                 const resumeFile = aiResumeUploadInput.files[0];
                 aiRecommendationResults.classList.remove('hidden');
 
@@ -811,19 +1312,15 @@
                     return;
                 }
 
-                // Show loading state
                 aiRecommendationResults.innerHTML = `<p class="text-center text-blue-600 font-semibold">Our AI is analyzing your resume to find the best courses for you...</p>`;
 
-                // Simulate AI analysis
                 setTimeout(() => {
-                    // This is a mock analysis. In a real app, you'd process the resume and use an AI model.
                     const allCourses = [
                         { title: 'Professional Data Science Certification', description: 'Master Python, R, Machine Learning, and SQL. Project-based learning with industry mentors.', rating: '4.8/5', duration: '120 Hours', tag: 'Recommended for You' },
                         { title: 'Full-Stack Web Development Bootcamp', description: 'Learn MERN stack (MongoDB, Express, React, Node.js) from scratch. Includes 5 capstone projects.', rating: '4.6/5', duration: '6 Months', tag: 'Skill Gap Found' },
                         { title: 'Advanced Excel & Business Analytics', description: 'Deep dive into financial modeling, pivot tables, VLOOKUP, and business intelligence techniques.', rating: '4.9/5', duration: '40 Hours', tag: 'Career Booster' }
                     ];
 
-                    // Randomly pick 1 or 2 courses to recommend
                     const recommendedCourses = allCourses.sort(() => 0.5 - Math.random()).slice(0, 2);
 
                     let resultsHtml = `
@@ -851,12 +1348,17 @@
                     resultsHtml += `</div>`;
                     aiRecommendationResults.innerHTML = resultsHtml;
 
-                }, 2500); // 2.5-second delay for simulation
+                }, 2500);
             });
-            
-            // Set initial active state for Home link
-            document.querySelector('.nav-link[data-section="home"]').classList.add('active');
-        });
-    </script>
+        }
+    }
+
+    // Make functions available globally
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.handleLogout = handleLogout;
+    window.showLoginPrompt = showLoginPrompt;
+    window.navigateTo = navigateTo;
+</script>
 </body>
 </html>
